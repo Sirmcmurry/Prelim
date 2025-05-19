@@ -1,0 +1,160 @@
+---
+title: "Final LDA Analysis (?)"
+author: "A Truly Desperate Grad Student"
+format: pdf
+---
+```{r, include=FALSE}
+library(tidyverse)
+lda_data = read.csv("D:\\Book2.csv")
+```
+This paper seeks to determine if there are phonetic differences between those who identify as East Asian Americans (Korean, Japanese, Chinese etc) versus those who identify as White American (of European descent). Are there specific sounds that speakers produce to signify their membership in their ethnic identities? If so, what are the phonetic variables that can be tied to that production? This study focuses on the production of concrete sounds from twenty-two undergraduate students at the University of California, Davis. All vowels were normalized following log-mean normalization to erase differences due to vocal tract lenght. 
+
+I suspect that there will be a difference between the vowels produced by the two ethnicities. In the paper *Phonological Correlates of Ethnic Identity: Evidence ofDivergence?* by Matthew J. Gordon, we find evidence of ethnic differences found in the production of the Northern City Shift (Gordon, 2000). African American and Mexican American speakers did not follow the general trend of ae raising the same way that White Americans did. There were also fewer instances of "innovative" forms of production, i.e. White Americans led the change in vowel shifts while African and Mexican Americans tended to be more conservative in their speech.
+
+This short paper will review the Linear Discriminant Analysis of the "White" vowels and the "East Asian" vowels. Following that, a Signal Detection Theory Analysis is conducted for each vowel. This steps are done for three reasons. First, if a model is able to correctly discriminate between the ethnicities using vowel formant data, its suggests that there exist differences in production. Second, If the sensitivity of the model (d') is 1.5 or higher for each vowel, the model does a pretty good job of distinguishing between the two ethnicities. Third, if the c value is at or near zero for each vowel, then any confusion found by the model is likely due to phonetic overlap.  The lda model (lda_model) is lda_model <- lda(vowel_ethnicity ~ f11-f15+f21-f25+f31-f35). 
+```{r, include=FALSE}
+lda_data$ethnicity=factor(lda_data$ethnicity)
+lda_data$vowel_ethnicity=factor(lda_data$vowel_ethnicity)
+```
+```{r, include=FALSE}
+library(MASS)
+
+# Select the predictors (excluding participant ID)
+lda_model <- lda(vowel_ethnicity ~ f11 + f21 + f31 + f15 + f25 + f35, 
+                 data = lda_data)
+
+# View the model
+lda_model
+```
+```{r, include=FALSE}
+predictions <- predict(lda_model)
+view(predictions)
+confusion_matrix <- table(lda_data$vowel_ethnicity, predictions$class)
+print(confusion_matrix)
+```
+
+
+```{r, include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(ggrepel)
+```
+```{r, include=FALSE}
+
+# Compute actual vowel-ethnicity averages
+df_actual <- lda_data %>%
+  group_by(vowel_ethnicity) %>%
+  summarise(
+    f1_avg = mean(rowMeans(across(c(f11, f15)), na.rm = TRUE)),
+    f2_avg = mean(rowMeans(across(c(f21, f25)), na.rm = TRUE)),
+    type = "Actual"
+  )
+
+# Compute predicted vowel-ethnicity averages
+df_predicted <- lda_data %>%
+  group_by(predicted_ethnicity, vowel) %>%  # Need vowel for clarity in grouping
+  summarise(
+    f1_avg = mean(rowMeans(across(c(f11, f15)), na.rm = TRUE)),
+    f2_avg = mean(rowMeans(across(c(f21, f25)), na.rm = TRUE)),
+    type = "Predicted"
+  ) 
+
+# Combine both sets into one dataset
+df_plot01 <- bind_rows(df_actual, df_predicted)
+```
+```{r, echo=FALSE}
+df_plot02 <- lda_data %>%
+  mutate(
+    f1_avg = rowMeans(across(c(f11, f12, f13, f14, f15)), na.rm = TRUE),
+    f2_avg = rowMeans(across(c(f21, f22, f23, f24, f25)), na.rm = TRUE)
+  ) %>%
+  dplyr::select(vowel_ethnicity, predicted_ethnicity, f1_avg, f2_avg)  # Explicitly call dplyr
+```
+```{r, echo=FALSE}
+# Define phonemic categories for grouping
+df_plot03 <- lda_data %>%
+  mutate(
+    phonemic_category = case_when(
+      grepl("^IH_", vowel_ethnicity) ~ "/bit/",
+      grepl("^AE_", vowel_ethnicity) ~ "/bat/",
+      grepl("^AH_", vowel_ethnicity) ~ "/but/",
+      grepl("^AA_", vowel_ethnicity) ~ "/bot/",
+      grepl("^AO_", vowel_ethnicity) ~ "/bought/",
+      grepl("^AY_", vowel_ethnicity) ~ "/buy/",
+      grepl("^EH_", vowel_ethnicity) ~ "/bet/",
+      grepl("^ER_", vowel_ethnicity) ~ "/bert/",
+      grepl("^EY_", vowel_ethnicity) ~ "/bait/",
+      grepl("^IY_", vowel_ethnicity) ~ "/bead/",
+      grepl("^OW_", vowel_ethnicity) ~ "/bode/",
+      grepl("^OY_", vowel_ethnicity) ~ "/boy/",
+      grepl("^UW_", vowel_ethnicity) ~ "/boot",
+      grepl("^UH_", vowel_ethnicity) ~ "/pull",
+    )
+  ) %>%
+  group_by(phonemic_category, predicted_ethnicity) %>%
+  summarise(
+    f1_avg = mean(rowMeans(across(c(f11, f15)), na.rm = TRUE)),
+    f2_avg = mean(rowMeans(across(c(f21, f25)), na.rm = TRUE)),
+    .groups = "drop"
+  )
+```
+```{r, echo=FALSE, fig.width=10, fig.height=7}
+ggplot(df_plot03, aes(x = f2_avg, y = f1_avg, color = phonemic_category, shape = predicted_ethnicity)) +
+  geom_point(size = 4, alpha = 0.8) +  
+  geom_text_repel(aes(label = phonemic_category), size = 5, fontface = "bold") +  
+  scale_y_reverse() +  
+  scale_x_reverse() +  
+  theme_classic() +
+  labs(
+    title = "Phonemic Vowel Categories with Phonetic Overlap (Beginning and End of Formants",
+    x = "F2 (Hz)",
+    y = "F1 (Hz)",
+    color = "Phonemic Category",
+    shape = "Predicted Ethnicity"
+  ) +
+  theme(
+    legend.position = "bottom",
+    axis.title = element_text(size = 14, face = "bold"),
+    axis.text = element_text(size = 12)
+  )
+```
+The above plot shows the predictions the model prepared given the ethnic data. Similar to the results from the Gordon paper (Gordon, 2000), there appear to be ethnic differences along a broader vowel shift, the Low-Back Merger specifically. Reagrding the back vowels, U fronting, a relatively common feature in North American English (Havenhill, 2004)(Kataoka, 2010), appears to be much more pronounced in white speakers than in East Asian speakers. There also appears to be more fronting of the "pull" vowel in White Speakers.
+
+However in the front of the mouth, there appears to be more an inverse. The I vowel appears to be more to the front and higher in East Asian speakers than White speakers. /ei/ and /i/ also appear to be more raised in the East Asian population as well. The front of the back vowels by White speakers and the raising of front vowels by East Asian speakers suggest to me that perhaps the vowel spaces of the two populations are not fully aligned. This could suggest dialect differences.  
+An important thing to note is that the formant values for each participant were normalized. Meaning, that the differences in the vowel space is necessarily due to dialectal differences. 
+In order to best understand these predicitons, I will now conduct to Signal Detection Theory analysis to determine just how likely it is that these predictions are reliable. 
+```{r, include=FALSE}
+df_sdt <- lda_data %>%
+  mutate(
+    hit = ifelse(ethnicity == predicted_ethnicity, 1, 0),
+    false_alarm = ifelse(ethnicity != predicted_ethnicity, 1, 0)
+  ) %>%
+  group_by(vowel_ethnicity) %>%
+  summarise(
+    hit_rate = mean(hit),
+    false_alarm_rate = mean(false_alarm),
+    .groups = "drop"
+  )
+```
+```{r, include=FALSE}
+df_sdt <- df_sdt %>%
+  mutate(
+    d_prime = qnorm(hit_rate) - qnorm(false_alarm_rate)
+  )
+```
+```{r, include=FALSE}
+df_sdt <- df_sdt %>%
+  mutate(
+    response_bias = -0.5 * (qnorm(hit_rate) + qnorm(false_alarm_rate))
+  )
+```
+
+The hit rates for much of the vowels are above chance. However, the response bias and d' values for some vowels that showed a production difference in the plot above suggest that perhaps the model is not quite reliable. For example, the UW vowel (in the word boot) appeared to be more fronted in the white population. The model is much more liberal in its classification of the UW vowel (the response bias value for both groups is a relatively large negative number) and has a low d'. I suspect that the model might be overcompensating the confusability of the vowel.
+
+The vowels IH and EH (bit and bet respectably) might not be reliably different either. The model shows a general tendency to be liberal in its classification of the vowels though the medium d' values shows that despite some overlap, the vowels are distinguishable. 
+
+After looking for the response bias and the sensitivity, it looks like any confusion that is happening is coming less from the model and more from possible vowel overlap. For some vowels, the model does a fairly good job of distinguishing some vowels but not all and not perfectly. This suggests to me that any confusion is coming from vowel overlap of the participants. In the end, given the sample size, I think there is reason to suspect that the vowel shape of the two groups are different. The white speakers tend to front the high and mid back vowels more while the East Asian speakers tend to raise the high and mid front vowels. 
+
+```{r, echo=FALSE}
+print(df_sdt)
+```
