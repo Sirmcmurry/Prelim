@@ -1,0 +1,23 @@
+---
+title: "Preliminary Paper"
+format: html
+---
+```{r, include=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(MASS)
+library(dplyr)
+library(ggrepel)
+lda_data = readxl::read_excel("C:\\Users\\verde\\OneDrive\\Desktop\\Prelim\\Prelim\\data.xlsx")
+```
+### Introduction 
+Treated as a social construct, self-identification along ethnic lines can be viewed through the lens of Social Identity Theory which argues that human categories are prototypes of integrated attributes (Hogg, 2016). In a nutshell, Social Identity Theory is defined as an individual's knowledge that they belong to a social group and they know the emotional and social significance of the group, i.e. they know what it means to "be" a member of a group. This self identification forms an individual's identity which is then mediated with the use of language particularly between two or more interlocutors (Ochs, 1993). This is all done by the interlocutors communicating by shared conventions that signify their identity and generate social meaning. One of the many forms of communicating conventions is through the production of specific sounds (Eckert & Labov, 2017) and stylistic choices in speech (Eckert & Podesva, 2011).
+
+In the paper *Phonological Correlates of Ethnic Identity: Evidence ofDivergence?* by Matthew J. Gordon, we find evidence of vowel production differences between four ethnic groups, White American, Mexican American, African American and biracial Americans. These differences are found along ethnic lines with regards to the Northern City Shift (NCS). African American and Mexican American speakers did not follow the general trend of /æ/ raising the same way that White Americans did. There were also fewer instances of "innovative" forms of production, i.e. White Americans led the change in vowel shifts while African and Mexican Americans tended to be more conservative in their speech. 
+In Cananda, there has been evidence suggesting that Chinese Canadians had a vowel pattern that shifted differently when compared to White Canadians (Cardoso et al, 2016), 
+
+This previous research suggests to me that vowel differences will be present along ethnic lines in California. California is expereincing a shift known as the Low-Back Merger (LBM) which involves the merge of the /ɔ/ and /ɑ/ vowels (Doernberger & Cerny, 2008), the raising of /æ/, the fronting of /u/ and the lowering of /I/ and /ɛ/ (Sheydaei, 2024). This paper, by conducting a Linear Discriminat Analysis of ""White" vowels and the "East Asian" vowels from university students in California, will provide preliminary evidence of production differences in line with Gordon (2000), Cardoso et al. (2016), and Sheydaei (2024). A Signal Detection Theory analysis will also be conducted to check the reliability of the results of the LDA. 
+
+### Data
+
+
