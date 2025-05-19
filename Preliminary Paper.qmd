@@ -34,12 +34,70 @@ I recorded the participants using Praat and sampled at 44100 hertz. Each partici
 Once I was satisfied with the alignments, it was time to turn to vowel extraction and analysis. Using the FastTrack plugin for Praat (Barreda...) I extracted the vowels from each individual wav file using the aligned text grids and kept them stored as wav files for each production of a vowel and diphthong. Once completed, I used the TrackFolder command under the FastTrack plugin in Praat to run the LPC analysis to find the frequencies of the first three formants. I then normalized everyone's formants following log-mean normalization (Barreda et Nearey, 2018). 
 
 ### Data Analysis
-This short paper will review the Linear Discriminant Analysis of the "White" vowels and the "East Asian" vowels. Following that, a Signal Detection Theory Analysis is conducted for each vowel. This steps are done for three reasons. First, if a model is able to correctly discriminate between the ethnicities using vowel formant data, its suggests that there exist differences in production. Second, If the sensitivity of the model (d') is 1.5 or higher for each vowel, the model does a pretty good job of distinguishing between the two ethnicities. Third, if the c value is at or near zero for each vowel, then any confusion found by the model is likely due to phonetic overlap.  The lda model (lda_model) is lda_model <- lda(vowel_ethnicity ~ f11-f15+f21-f25+f31-f35).
+This short paper will review the Linear Discriminant Analysis (LDA) of the "White" vowels and the "East Asian" vowels. Following that, a Signal Detection Theory (SDT) Analysis is conducted for each vowel. This steps are done for three reasons. First, if a model is able to correctly discriminate between the ethnicities using vowel formant data, its suggests that there exist differences in production. Second, If the sensitivity of the model (d') is 1.5 or higher for each vowel, the model does a pretty good job of distinguishing between the two ethnicities. Third, if the c value is at or near zero for each vowel, then any confusion found by the model is likely due to phonetic overlap.  The lda model (lda_model) is lda_model <- lda(vowel_ethnicity ~ f11-f15+f21-f25+f31-f35).
 
 In plain English, I expect the model to predict the relative location of each vowel for each ethnicity within the vowel space. I will make these predictions given the start and end of the first, second, and third formants of each vowel. 
 
-### Results
-```{r}
-
+### LDA Predictions
+```{r, include=FALSE}
+lda_data=lda_data[lda_data$vowel!="i",]
 ```
+```{r, include=FALSE}
+lda_model <- lda(vowel_ethnicity ~ f11 + f21 + f31 + f15 + f25 + f35, 
+                 data = lda_data)
+predictions <- predict(lda_model)
+view(predictions)
+confusion_matrix <- table(lda_data$vowel_ethnicity, predictions$class)
+```
+```{r, include=FALSE}
+df_actual <- lda_data %>%
+  group_by(vowel_ethnicity) %>%
+  summarise(
+    f1_avg = mean(rowMeans(across(c(f11, f15)), na.rm = TRUE)),
+    f2_avg = mean(rowMeans(across(c(f21, f25)), na.rm = TRUE)),
+    type = "Actual"
+  )
+
+# Compute predicted vowel-ethnicity averages
+df_predicted <- lda_data %>%
+  group_by(predicted_ethnicity, vowel) %>%  # Need vowel for clarity in grouping
+  summarise(
+    f1_avg = mean(rowMeans(across(c(f11, f15)), na.rm = TRUE)),
+    f2_avg = mean(rowMeans(across(c(f21, f25)), na.rm = TRUE)),
+    type = "Predicted"
+  ) 
+
+# Combine both sets into one dataset
+df_plot01 <- bind_rows(df_actual, df_predicted)
+```
+```{r, include=FALSE}
+df_plot_clean <- df_plot01 %>%
+  filter(!is.na(vowel), !is.na(predicted_ethnicity))
+```
+```{r F1-1, echo=FALSE, fig.width=10, fig.height=7, warning=FALSE, fig.cap= "LDA Prediction of Vowels by Ethnicity"}
+ggplot(df_plot_clean, aes(x = f2_avg, y = f1_avg, color = vowel, shape = predicted_ethnicity)) +
+  geom_point(size = 4, alpha = 0.8) +  
+  geom_text_repel(aes(label = vowel), size = 5, fontface = "bold") +  
+  scale_y_reverse() +  
+  scale_x_reverse() +  
+  theme_classic() +
+  labs(
+    title = "",
+    x = "F2 (Hz)",
+    y = "F1 (Hz)",
+    color = "Vowel",
+    shape = "Predicted Ethnicity"
+  ) +
+  theme(
+    legend.position = "bottom",
+    axis.title = element_text(size = 14, face = "bold"),
+    axis.text = element_text(size = 12)
+  )
+```
+The plot above shows the location of each vowel for the two ethnicities based on what the model predicted. Before I report the results of the SDT analysis I will highlight a three generalizations that I note from the plot. First, between White speakers and East Asian speakers, the front vowels (front of ɝ) are predicted to be different from each other mainly in terms of height. The most dramatic difference appears to be /eI/ and /I/ while /ɛ/ is less dramatic but still noticeable.
+
+Second, the central vowels (between ɝ and ɔɪ) are not predicted to be different from each other. The model probably finds these vowels to be confusable. While it was generally clear that the East Asian speakers raised the front vowels more than the White speakers, I cannot find a generalizable pattern for the middle vowels. 
+
+Third, the back vowels (especially /u/) are predicted to be dramatically different. 
+
 

@@ -70,13 +70,31 @@ ul.task-list li input[type="checkbox"] {
 <h3 class="anchored" data-anchor-id="participants">Participants</h3>
 <p>The data for this study comes from 22 undergraduate students at the University of California, Davis. 12 self identified as East Asian (i.e.&nbsp;ethnically descendant of Japanese, Chinese, and Philippine peoples) and the remaining 10 self identified as White (i.e.&nbsp;ethnically descendant of European peoples). Each participant were recruited through the UC Davis SONA system.</p>
 </section>
-<section id="methods" class="level3">
-<h3 class="anchored" data-anchor-id="methods">Methods</h3>
+<section id="data-collection" class="level3">
+<h3 class="anchored" data-anchor-id="data-collection">Data Collection</h3>
 <p>The procedure the participants followed was a straightforward one. After reading over information related to the study and signing a waiver allowing me to record them, they entered into a recording studio. After testing the sensitivity of the microphone I presented them with a Google Slides presentation containing the words I asked them to read. They were told that they would see a word on the screen and have 2 to 3 seconds to read the word before I switched to the next. They were told that not every word was a “real” word and to try their best.</p>
 <p>Each word was typed in bright orange and presented against a white background. From my position outside of the recording booth, I clicked from slide to slide, word to word about every two seconds and made notes of words that the participant had difficulty with pronouncing. In a couple of instances, I asked participants to repeat a word after they had read through the entire list twice. For example, many participants would pronounce the word “head” in the same way the word “heed” is pronounced. Some words were unfamiliar to the participants even though they were real words. A couple were unsure about the pronunciation of the word “gin” and would produce the “g” with the voiced velar /g/ instead of the affricate /dz/. In total, each participant would repeat every word in the list twice. The list of words included HvD, BvD, BvT, pool/pull merger, pen/pin mergers, and two diphthongs the /oi/ before /l/ found in soil and the /ai/ found in sigh. The HvD words were to find neutral uses of the 10 English vowels (including /r/).</p>
 <p>After the participants had completed their time in the recording booth, they were asked to answer a short questionnaire to gather specific information on their demographics. These included: what is your gender identity, what is your ethnic background, what area of California did you grow up in? These questions in an open-ended format because I wanted them to think about how they identified and I felt that yes or no questions were inadequate. I recognize my role in influencing the answers however as they could only answer the questions I asked them narrowing the ways in which they could identify. I asked these questions after they completed their time in the recording booth because I wanted them to read the provided stimuli as naturally as possible.</p>
 <p>I recorded the participants using Praat and sampled at 44100 hertz. Each participant recording was done in a single wav file unless I had to re record an individual’s production. In that case, I created a separate wav file that contained only the repeated word or words. I then used the cut and paste feature in Praat to paste the repeated word into the original wav file. After the recording had finished, I took the wav file recordings and hand annotated them to align the spectrographs with the written words. Following this, I used DARLA (Dartmouth Linguistic Automation) to properly align the segments of the words to their respective slices in the spectrographs.</p>
 <p>Once I was satisfied with the alignments, it was time to turn to vowel extraction and analysis. Using the FastTrack plugin for Praat (Barreda…) I extracted the vowels from each individual wav file using the aligned text grids and kept them stored as wav files for each production of a vowel and diphthong. Once completed, I used the TrackFolder command under the FastTrack plugin in Praat to run the LPC analysis to find the frequencies of the first three formants. I then normalized everyone’s formants following log-mean normalization (Barreda et Nearey, 2018).</p>
+</section>
+<section id="data-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="data-analysis">Data Analysis</h3>
+<p>This short paper will review the Linear Discriminant Analysis of the “White” vowels and the “East Asian” vowels. Following that, a Signal Detection Theory Analysis is conducted for each vowel. This steps are done for three reasons. First, if a model is able to correctly discriminate between the ethnicities using vowel formant data, its suggests that there exist differences in production. Second, If the sensitivity of the model (d’) is 1.5 or higher for each vowel, the model does a pretty good job of distinguishing between the two ethnicities. Third, if the c value is at or near zero for each vowel, then any confusion found by the model is likely due to phonetic overlap. The lda model (lda_model) is lda_model &lt;- lda(vowel_ethnicity ~ f11-f15+f21-f25+f31-f35).</p>
+<p>In plain English, I expect the model to predict the relative location of each vowel for each ethnicity within the vowel space. I will make these predictions given the start and end of the first, second, and third formants of each vowel.</p>
+</section>
+<section id="lda-predictions" class="level3">
+<h3 class="anchored" data-anchor-id="lda-predictions">LDA Predictions</h3>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Preliminary-Paper_files/figure-html/F1-1-1.png" class="img-fluid figure-img" width="960"></p>
+<figcaption class="figure-caption">LDA Prediction of Vowels by Ethnicity</figcaption>
+</figure>
+</div>
+</div>
+</div>
 </section>
 
 </main>
