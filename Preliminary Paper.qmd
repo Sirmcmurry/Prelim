@@ -16,7 +16,7 @@ Treated as a social construct, self-identification along ethnic lines can be vie
 In the paper *Phonological Correlates of Ethnic Identity: Evidence of Divergence?* by Matthew J. Gordon, we find evidence of vowel production differences between four ethnic groups, White American, Mexican American, African American and biracial Americans. These differences are found along ethnic lines with regards to the Northern City Shift (NCS). African American and Mexican American speakers did not follow the general trend of /æ/ raising the same way that White Americans did. There were also fewer instances of "innovative" forms of production, i.e. White Americans led the change in vowel shifts while African and Mexican Americans tended to be more conservative in their speech. 
 In Cananda, there has been evidence suggesting that Chinese Canadians had a vowel pattern that shifted differently when compared to White Canadians (Cardoso et al, 2016), 
 
-This previous research suggests to me that vowel differences will be present along ethnic lines in California. California is expereincing a shift known as the Low-Back Merger (LBM) which involves the merge of the /ɔ/ and /ɑ/ vowels (Doernberger & Cerny, 2008), the raising of /æ/, the fronting of /u/ and the lowering of /I/ and /ɛ/ (Sheydaei, 2024). This paper, by conducting a Linear Discriminat Analysis of ""White" vowels and the "East Asian" vowels from university students in California, will provide preliminary evidence of production differences in line with Gordon (2000), Cardoso et al. (2016), and Sheydaei (2024). A Signal Detection Theory analysis will also be conducted to check the reliability of the results of the LDA. 
+This previous research suggests to me that vowel differences will be present along ethnic lines in California. California is experiencing a shift known as the Low-Back Merger (LBM) which involves the merge of the /ɔ/ and /ɑ/ vowels (Doernberger & Cerny, 2008), the raising of /æ/, the fronting of /u/ and the lowering of /I/ and /ɛ/ (Sheydaei, 2024). This paper, by conducting a Linear Discriminat Analysis of ""White" vowels and the "East Asian" vowels from university students in California, will provide preliminary evidence of production differences in line with Gordon (2000), Cardoso et al. (2016), and Sheydaei (2024). A Signal Detection Theory analysis will also be conducted to check the reliability of the results of the LDA. 
 
 ### Participants
 The data for this study comes from 22 undergraduate students at the University of California, Davis. 12 self identified as East Asian (i.e. ethnically descendant of Japanese, Chinese, and Philippine peoples) and the remaining 10 self identified as White (i.e. ethnically descendant of European peoples). Each participant were recruited through the UC Davis SONA system.
@@ -98,6 +98,52 @@ The plot above shows the location of each vowel for the two ethnicities based on
 
 Second, the central vowels (between ɝ and ɔɪ) are not predicted to be different from each other. The model probably finds these vowels to be confusable. While it was generally clear that the East Asian speakers raised the front vowels more than the White speakers, I cannot find a generalizable pattern for the middle vowels. 
 
-Third, the back vowels (especially /u/) are predicted to be dramatically different. 
+Third, the back vowels (especially /u/) are predicted to be dramatically different.The most striking prediciton is the difference in the fronting of /u/. /u/ fronting, a relatively common feature in North American English (Havenhill, 2004)(Kataoka, 2010), appears to be much more pronounced in white speakers than in East Asian speakers. The fronting of /ʊ/ in the White population is very surprising. In contrast to the front vowels, the back vowels are predicted to shift more in the White population than the East Asian population. 
+
+With specific regards to the LBM, the fronting of /u/ fits the predicted pattern while the lowering of /ɪ/ and /ɛ/ don't. I suspect that the White population is leading the shift more so than the East Asian population. 
+
+### SDT Analysis
+```{r, include=FALSE}
+df_sdt <- lda_data %>%
+  mutate(
+    hit = ifelse(ethnicity == predicted_ethnicity, 1, 0),
+    false_alarm = ifelse(ethnicity != predicted_ethnicity, 1, 0)
+  ) %>%
+  group_by(vowel_ethnicity) %>%
+  summarise(
+    hit_rate = mean(hit),
+    false_alarm_rate = mean(false_alarm),
+    .groups = "drop"
+  )
+```
+```{r, include=FALSE}
+df_sdt <- df_sdt %>%
+  mutate(
+    d_prime = qnorm(hit_rate) - qnorm(false_alarm_rate)
+  )
+df_sdt <- df_sdt %>%
+  mutate(
+    response_bias = -0.5 * (qnorm(hit_rate) + qnorm(false_alarm_rate))
+  )
+```
+```{r, include=FALSE}
+library(pROC)
+
+# Define the vowel you want to analyze
+target_vowel01 = "eɪ_EA"  # Change this dynamically
+target_vowel02 = "eɪ_W"
+target_vowel03 = "ɛ_EA"
+target_vowel04 = "ɛ_W"
+target_vowel05 = "ɪ_EA"
+target_vowel06 = "ɪ_W"
+target_vowel07 = "u_EA"
+target_vowel08 = "u_W"
+target_vowel09 = "ʊ_EA"
+target_vowel10 = "ʊ_W"
+```
+
+
+
+
 
 
