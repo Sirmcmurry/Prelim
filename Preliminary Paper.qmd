@@ -1,6 +1,6 @@
 ---
 title: "Preliminary Paper"
-format: html
+format: docx
 ---
 ```{r, include=FALSE}
 library(tidyverse)
@@ -103,6 +103,7 @@ Third, the back vowels (especially /u/) are predicted to be dramatically differe
 With specific regards to the LBM, the fronting of /u/ fits the predicted pattern while the lowering of /ɪ/ and /ɛ/ don't. I suspect that the White population is leading the shift more so than the East Asian population. 
 
 ### SDT Analysis
+The SDT Analysis is to test the reliability of the model. I specifically want to see the hit rate and miss rate for the five vowels mentioned above. Those vowels are, /eɪ/, /ɪ/, and /ɛ/ in the front and /u/ and /ʊ/ in the back. I will also report the sensitivity (d') and the response bias in an appendix. 
 ```{r, include=FALSE}
 df_sdt <- lda_data %>%
   mutate(
@@ -127,23 +128,29 @@ df_sdt <- df_sdt %>%
   )
 ```
 ```{r, include=FALSE}
-library(pROC)
-
-# Define the vowel you want to analyze
-target_vowel01 = "eɪ_EA"  # Change this dynamically
-target_vowel02 = "eɪ_W"
-target_vowel03 = "ɛ_EA"
-target_vowel04 = "ɛ_W"
-target_vowel05 = "ɪ_EA"
-target_vowel06 = "ɪ_W"
-target_vowel07 = "u_EA"
-target_vowel08 = "u_W"
-target_vowel09 = "ʊ_EA"
-target_vowel10 = "ʊ_W"
+write_excel_csv(df_sdt, "C:\\Users\\verde\\OneDrive\\Desktop\\Prelim\\Prelim\\df_sdt.xlsx")
 ```
 
+```{r, include=FALSE}
+library(pROC)
+```
+```{r, include=FALSE}
+data = data.frame(
+  vowel_ethnicity = c("eɪ_EA", "eɪ_W", "u_EA", "u_W", "ɛ_EA", "ɛ_W","ɪ_EA", "ɪ_W", "ʊ_EA", "ʊ_W"),
+hit_rate = c(0.7778, 0.4667,0.6458, 0.6125,0.7845, 0.5305,0.7924, 0.5335, 0.8261, 0.5 ),
+false_alarm_rate = c(0.2222, 0.5333,0.3542, 0.3875,0.2155, 0.4695,0.2076, 0.4665, 0.1739, 0.5 ))
+```
+```{r, echo=FALSE, warning=FALSE}
+data <- data[order(data$false_alarm_rate), ]
+ggplot(data, aes(x = false_alarm_rate, y = hit_rate, color = vowel_ethnicity)) +
+  geom_point(size=3) +
+  labs(title = "ROC Curve for Vowel Classification",
+       x = "False Alarm Rate",
+       y = "Hit Rate") +
+  theme_minimal()
+```
+As can be seen in the plot above, most of the vowels had a hit rate higher than that of the false alarm rate. The /ʊ/ of the White population was split evenly while the /eɪ/ in that population had more false alarms than hits. Both vowels had a d' and response bias at or just slightly below zero. This suggests that there exists confusion in the categories and that the model does not have any systemic bias. 
 
+In contrast the /eɪ/ and /ʊ/ in the East Asian population had a very high Hit Rate and a moderately reasonable d' values (1.5 and 1.8 respectably). This could mean that the two populations have true differences in production though some overlap still exists. It could also mean that the White Population had more differences within itself which made the prediction more difficult.   
 
-
-
-
+The /ɛ/ vowel for both groups had high hit rates with d' values of 1.57 for the East population and 1.52 for the White population. The response bias of the East Asian population is -2 suggesting that the model is more liberal in its predictions. However, given the false alarm rate is low, I think this suggests that while overlap of the categories still exists, the model's bias doesn't strongly sway the prediction. 
