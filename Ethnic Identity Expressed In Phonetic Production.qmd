@@ -1,0 +1,326 @@
+---
+title: "Ethnic Differences in Phonetic Production"
+author: "Ryan C McMurry"
+format: pptx
+editor: visual
+---
+
+## Introduction
+
+Are their phonetic production differences along ethnic lines?
+
+-   If yes, do these differences show in vowel production?
+
+-   How do these differences pattern along current vowel shifts?
+
+## Caveats
+
+What I do not have time to discuss
+
+-   Definition of Ethnicity
+    -   Ethnicity is a very fluid human construction
+    -   No two people will have the exact same ethnic expression
+-   Despite this there are general patterns that can be found
+    -   Social Identity Theory and social significance and meaning (Hogg, 2016)
+    -   This meaning is conveyed by shared conventions (Ochs, 1993)
+    -   Conventions are shared by concrete sounds (Eckert & Labov, 2017)
+-   Phonetic NOT Phonemic
+    -   I am looking at this from a phonetic lens
+
+## Previous Work
+
+Vowel differences along ethnic lines
+
+-   Variation of Northern City Shift (Gordon, 2000)
+
+    -   Raising of /æ/ was not seen in African and Mexican American population
+
+    -   Raising of /ɛ/ was not seen in the African and Mexican American population
+
+    -   White Americans appeared to lead the shift
+
+## Previous Work (cont.)
+
+Vowel differences along ethnic lines
+
+-   Variation in San Francisco (Cardoso et al. 2016)
+
+    -   Differences in nasality in /æ/
+
+    -   Chinese Americans showed less nasality in words like BAN
+
+    -   White Americans generally produced more nasality
+
+## Current Study
+
+Will I find vowel differences from the students at UC Davis?
+
+-   22 participants (18-20 yo)
+
+    -   12 East Asian (ethnically descendant of Japanese, Chinese, and Philippine peoples)
+
+    -   10 White (ethnically descendant of European peoples)
+
+-   From California
+
+-   HvD, BvD, BvT, Pen/Pin, two diphthongs, pull/pool
+
+## Low Back Merger (LBM)
+
+Merger throughout North America of merging of /ɔ/ and /ɑ/ vowels (Doernberger & Cerny, 2008)
+
+-   COT and CAUGHT
+
+California
+
+-   fronting of /u/ and the lowering of /I/ and /ɛ/
+
+-   raising of /æ/ in some contexts
+
+## Method
+
+-   Participants were recorded using Praat (44100 hertz)
+
+-   Annotated the wav files and aligned using DARLA (Dartmouth Linguistic Automation)
+
+-   Extracted the vowels using FastTrack (Barreda, 2021)
+
+-   Normalized the vowels using log-mean normalization (Barreda & Nearey, 2018)
+
+## Method (Cont.)
+
+Linear Discriminant Analysis & Signal Detection Theory Analysis
+
+-   LDA: Can a model to be trained to the formants of each ethnicity?
+
+    -   Predictions could suggest where in the vowel space each ethnicity produces the vowel
+
+-   SDT: How accurate and reliable is that model?
+
+    -   What is the hit rate and false alarm rate?
+
+## LDA Predictions
+
+```{r, include=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(MASS)
+library(dplyr)
+library(ggrepel)
+lda_data = readxl::read_excel("C:\\Users\\verde\\OneDrive\\Desktop\\Prelim\\Prelim\\data.xlsx")
+lda_data=lda_data[lda_data$vowel!="i",]
+lda_model <- lda(vowel_ethnicity ~ f11 + f21 + f31 + f15 + f25 + f35, 
+                 data = lda_data)
+predictions <- predict(lda_model)
+df_actual <- lda_data %>%
+  group_by(vowel_ethnicity) %>%
+  summarise(
+    f1_avg = mean(rowMeans(across(c(f11, f15)), na.rm = TRUE)),
+    f2_avg = mean(rowMeans(across(c(f21, f25)), na.rm = TRUE)),
+    type = "Actual"
+  )
+
+# Compute predicted vowel-ethnicity averages
+df_predicted <- lda_data %>%
+  group_by(predicted_ethnicity, vowel) %>%  # Need vowel for clarity in grouping
+  summarise(
+    f1_avg = mean(rowMeans(across(c(f11, f15)), na.rm = TRUE)),
+    f2_avg = mean(rowMeans(across(c(f21, f25)), na.rm = TRUE)),
+    type = "Predicted"
+  ) 
+
+# Combine both sets into one dataset
+df_plot01 <- bind_rows(df_actual, df_predicted)
+df_plot_clean <- df_plot01 %>%
+  filter(!is.na(vowel), !is.na(predicted_ethnicity))
+
+```
+
+lda_model \<- lda(vowel_ethnicity \~ f11-f15+f21-f25+f31-f35)
+
+Divide the vowel space into 3
+
+1.  Front Vowels
+
+    Differ in terms of "height"
+
+    The most dramatic /eI/ and /I/ while /ɛ/ is less so
+
+2.  Mid Vowels
+
+    Difficult to generalize a pattern
+
+    Perhaps /ɝ/ is different
+
+    Vowels may have great overlap in production
+
+3.  Back Vowels
+
+    Differ in terms of "frontness"
+
+    /u/ and /ʊ/ strikingly different
+
+```{r, echo=FALSE}
+ggplot(df_plot_clean, aes(x = f2_avg, y = f1_avg, color = vowel, shape = predicted_ethnicity)) +
+  geom_point(size = 4, alpha = 0.8) +  
+  geom_text_repel(aes(label = vowel), size = 5, fontface = "bold") +  
+  scale_y_reverse() +  
+  scale_x_reverse() +  
+  theme_classic() +
+  labs(
+    title = "LDA Prediction of Vowels by Ethnicity",
+    x = "F2 (Hz)",
+    y = "F1 (Hz)",
+    color = "Vowel",
+    shape = "Predicted Ethnicity"
+  ) +
+  theme(
+    legend.position = "bottom",
+    axis.title = element_text(size = 14, face = "bold"),
+    axis.text = element_text(size = 12)
+  )
+```
+
+## LBM Context
+
+Low back vowels are merged (how surprising)
+
+Differences in the fronting /u/ and /ʊ/
+
+-   The White population follows this trend more
+
+Differences in /ɪ/, and /ɛ/ lowering
+
+-   "Higher" in the EA population
+
+-   The W population follows this trend more
+
+```{r, echo=FALSE}
+ggplot(df_plot_clean, aes(x = f2_avg, y = f1_avg, color = vowel, shape = predicted_ethnicity)) +
+  geom_point(size = 4, alpha = 0.8) +  
+  geom_text_repel(aes(label = vowel), size = 5, fontface = "bold") +  
+  scale_y_reverse() +  
+  scale_x_reverse() +  
+  theme_classic() +
+  labs(
+    title = "LDA Prediction of Vowels by Ethnicity",
+    x = "F2 (Hz)",
+    y = "F1 (Hz)",
+    color = "Vowel",
+    shape = "Predicted Ethnicity"
+  ) +
+  theme(
+    legend.position = "bottom",
+    axis.title = element_text(size = 14, face = "bold"),
+    axis.text = element_text(size = 12)
+  )
+```
+
+## SDT Analysis
+
+Front Vowels
+
+-   /eɪ/ in the White population low hit rate /eɪ/ high rate
+
+-   /ɛ/ high hit rate in both populations
+
+-   /ɪ/ high hit rate in both populations
+
+Back Vowels
+
+-   /ʊ/ fifty-fifty split in the W population high in the EA population
+
+-   /u/ high hit rate in both populations
+
+Can we trust these results?
+
+```{r, include=FALSE}
+df_sdt <- lda_data %>%
+  mutate(
+    hit = ifelse(ethnicity == predicted_ethnicity, 1, 0),
+    false_alarm = ifelse(ethnicity != predicted_ethnicity, 1, 0)
+  ) %>%
+  group_by(vowel_ethnicity) %>%
+  summarise(
+    hit_rate = mean(hit),
+    false_alarm_rate = mean(false_alarm),
+    .groups = "drop"
+  )
+df_sdt <- df_sdt %>%
+  mutate(
+    d_prime = qnorm(hit_rate) - qnorm(false_alarm_rate)
+  )
+df_sdt <- df_sdt %>%
+  mutate(
+    response_bias = -0.5 * (qnorm(hit_rate) + qnorm(false_alarm_rate))
+  )
+library(pROC)
+data = data.frame(
+  vowel_ethnicity = c("eɪ_EA", "eɪ_W", "u_EA", "u_W", "ɛ_EA", "ɛ_W","ɪ_EA", "ɪ_W", "ʊ_EA", "ʊ_W"),
+hit_rate = c(0.7778, 0.4667,0.6458, 0.6125,0.7845, 0.5305,0.7924, 0.5335, 0.8261, 0.5 ),
+false_alarm_rate = c(0.2222, 0.5333,0.3542, 0.3875,0.2155, 0.4695,0.2076, 0.4665, 0.1739, 0.5 ))
+```
+
+```{r, echo=FALSE}
+data <- data[order(data$false_alarm_rate), ]
+ggplot(data, aes(x = false_alarm_rate, y = hit_rate, color = vowel_ethnicity)) +
+  geom_point(size=5) +
+  labs(title = "ROC Curve for Vowel Classification",
+       x = "False Alarm Rate",
+       y = "Hit Rate") +
+  theme_minimal()
+```
+
+## SDT Analysis (Cont.)
+
+Yes, and
+
+Overall d' Values (sensitivity) relatively moderate \~1.5
+
+-   Suggest the mode is able to properly discriminate between the two ethnicities
+
+-   However, some overlap does exist
+
+Lower d' Values in the W population
+
+-   d' for the /ɪ/ vowel in the White population only .16
+
+-   d' for the /u/ vowel in both populations only .75 and .57 (EA & W)
+
+Perhaps there is more overlap within groups then between?
+
+```{r, echo=FALSE}
+data <- data[order(data$false_alarm_rate), ]
+ggplot(data, aes(x = false_alarm_rate, y = hit_rate, color = vowel_ethnicity)) +
+  geom_point(size=5) +
+  labs(title = "ROC Curve for Vowel Classification",
+       x = "False Alarm Rate",
+       y = "Hit Rate") +
+  theme_minimal()
+```
+
+## Thoughts
+
+Production differences appear to exist
+
+Front vowels
+
+-   Predicted to be higher in the EA population than the W
+
+Back vowels
+
+-   Predicted to be more fronted in the W population than the EA
+
+Intra-group Variation
+
+-   d' values overall lower in the EA population
+
+-   Possible evidence of greater variation in the W population
+
+## Conclusion
+
+MORE DATA!
+
+-   In order to increase accuracy and raise d' values
+
+## Thank you
